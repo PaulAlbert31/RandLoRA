@@ -18,6 +18,12 @@ then
     model='LLaMA3-8B'
     bs=16
 fi
+if [ "$5" = "LLama3-70" ]
+then
+    base='meta-llama/Meta-Llama-3-70B'
+    model='LLaMA3-70B'
+    bs=16
+fi
 if [ "$5" = "Phi3" ]
 then
     base='microsoft/Phi-3-mini-4k-instruct'

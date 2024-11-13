@@ -16,7 +16,7 @@ if [ "$5" = "LLama3" ]
 then
     base='meta-llama/Meta-Llama-3-8B'
     model='LLaMA3-8B'
-    bs=16
+    bs=4
 fi
 if [ "$5" = "LLama3-70" ]
 then
@@ -28,7 +28,7 @@ if [ "$5" = "Phi3" ]
 then
     base='microsoft/Phi-3-mini-4k-instruct'
     model='Phi3'
-    bs=16
+    bs=8
 fi
 echo $base
 
@@ -37,48 +37,41 @@ CUDA_VISIBLE_DEVICES=$4 python finetune.py \
     --data_path commonsense_$6k.json \
     --output_dir $3 \
     --batch_size 16  --micro_batch_size $bs --num_epochs 1 \
-    --learning_rate 1e-4 --cutoff_len 256 \
-    --adapter_name randlora \
+    --learning_rate 3e-4 --cutoff_len 256 --val_set_size 120 \
+    --eval_step 200 --save_step 200 --adapter_name lorand \
     --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]'\
-    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing --load_4bit --very_sparse
-
-CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
-		    --model $model \
-		    --adapter RandLora \
-		    --dataset openbookqa \
-		    --base_model $base \
-		    --batch_size 1 \
-		    --lora_weights $3|tee -a $3/openbookqa.txt
-
-CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
-		    --model $model \
-		    --adapter RandLora \
-		    --dataset ARC-Challenge \
-		    --base_model $base \
-		    --batch_size 1 \
-		    --lora_weights $3|tee -a $3/ARC-Challenge.txt
-
+    --param-type 'nola' \
+    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing
+'''
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter RandLora \
-    --dataset boolq \
+    --adapter LoRAND \
+    --dataset ARC-Challenge \
     --base_model $base \
     --batch_size 1 \
-    --lora_weights $3|tee -a $3/boolq.txt
-
+    --lora_weights $3|tee -a $3/ARC-Challenge.txt
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter RandLora \
+    --adapter LoRAND \
     --dataset social_i_qa \
     --base_model $base \
     --batch_size 1 \
     --lora_weights $3|tee -a $3/social_i_qa.txt
 
+
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter RandLora \
+    --adapter LoRAND \
+    --dataset boolq \
+    --base_model $base \
+    --batch_size 1 \
+    --lora_weights $3|tee -a $3/boolq.txt
+
+CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
+    --model $model \
+    --adapter LoRAND \
     --dataset piqa \
     --base_model $base \
     --batch_size 1 \
@@ -86,7 +79,7 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter RandLora \
+    --adapter LoRAND \
     --dataset hellaswag \
     --base_model $base \
     --batch_size 1 \
@@ -94,7 +87,7 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter RandLora \
+    --adapter LoRAND \
     --dataset winogrande \
     --base_model $base \
     --batch_size 1 \
@@ -102,11 +95,18 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter RandLora \
+    --adapter LoRAND \
     --dataset ARC-Easy \
     --base_model $base \
     --batch_size 1 \
     --lora_weights $3|tee -a $3/ARC-Easy.txt
 
+CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
+    --model $model \
+    --adapter LoRAND \
+    --dataset openbookqa \
+    --base_model $base \
+    --batch_size 1 \
+    --lora_weights $3|tee -a $3/openbookqa.txt
 
 

@@ -213,7 +213,7 @@ def create_batch(dataset, batch_size):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=True)
-    parser.add_argument('--model', choices=['LLaMA-7B', "LLaMA-13B",'LLaMA2-7B','LLaMA3-8B','Phi3', 'Qwen2', 'Qwen'], required=True)
+    parser.add_argument('--model', choices=['LLaMA-7B', "LLaMA-13B",'LLaMA2-7B','LLaMA3-8B','LLaMA3-70B','Phi3', 'Qwen2', 'Qwen'], required=True)
     parser.add_argument('--adapter', choices=['LoRA', 'RandLora', 'Vera'],
                         required=True)
     parser.add_argument('--base_model', required=True)
