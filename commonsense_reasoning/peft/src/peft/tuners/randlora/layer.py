@@ -108,7 +108,7 @@ class RandLoraLayer(BaseTunerLayer):
         self.randlora_lambda[adapter_name] = nn.Parameter(torch.zeros(r, self.n), requires_grad=True)
         self.randlora_gamma[adapter_name] = nn.Parameter(torch.ones(self.n, min(self.out_features, self.in_features))/max(self.out_features, self.in_features), requires_grad=True)
 
-        self.scaling[adapter_name] = randlora_alpha / r / math.sqrt(self.n)
+        self.scaling[adapter_name] = randlora_alpha / r / math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
 
         # non trainable references to randbasis_A/B buffers
         self.randbasis_A = randbasis_A
@@ -319,9 +319,9 @@ class Linear(nn.Linear, RandLoraLayer):
                     continue
                 
                 dropout = self.randlora_dropout[active_adapter]
-                update_B, update_A, _ = self.get_scaled_bases(adapter)
+                update_B, update_A, _ = self.get_scaled_bases(active_adapter)
                 x = x.to(update_A.dtype)
-                scaling = self.scaling[adapter]
+                scaling = self.scaling[active_adapter]
                 result = result + F.linear(F.linear(dropout(x), update_B), update_A) * scaling
 
         result = result.to(previous_dtype)

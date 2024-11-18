@@ -16,10 +16,10 @@ import fire
 
 import torch
 
-sys.path.insert(0, os.path.join(os.getcwd(), "peft/src/"))
+sys.path.insert(0, os.path.join(os.getcwd(), "../peft/src/"))
 from peft import PeftModel
 from tqdm import tqdm
-sys.path.insert(0, os.path.join(os.getcwd(), "transformers"))
+sys.path.insert(0, os.path.join(os.getcwd(), "../transformers"))
 from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer, AutoModelForCausalLM, AutoTokenizer
 
 if torch.cuda.is_available():
@@ -117,7 +117,7 @@ def main(
     batches = create_batch(dataset, args.batch_size)
     tokenizer, model = load_model(args)
 
-    if args.adapter == "LoRA" or args.adapter == "DoRA" or args.adapter == "RandLora" or args.adapter == 'LoRAEff':
+    if args.adapter == "LoRA" or args.adapter == "DoRA" or args.adapter == "RandLora":
         print("Merge LoRA/DoRA/RandLora weights into the original weights")
         model = model.merge_and_unload()
        
@@ -214,7 +214,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=["boolq", "piqa", "social_i_qa", "hellaswag", "winogrande", "ARC-Challenge", "ARC-Easy", "openbookqa"], required=True)
     parser.add_argument('--model', choices=['LLaMA-7B', "LLaMA-13B",'LLaMA2-7B','LLaMA3-8B','LLaMA3-70B','Phi3', 'Qwen2', 'Qwen'], required=True)
-    parser.add_argument('--adapter', choices=['LoRA', 'RandLora', 'Vera'],
+    parser.add_argument('--adapter', choices=['LoRA', 'RandLora', 'Vera', 'DoRA'],
                         required=True)
     parser.add_argument('--base_model', required=True)
     parser.add_argument('--lora_weights', required=True)

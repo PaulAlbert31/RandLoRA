@@ -21,11 +21,6 @@ disable_progress_bar()
 from datasets import set_caching_enabled
 set_caching_enabled(False)
 
-"""
-Unused imports:
-import torch.nn as nn
-import bitsandbytes as bnb
-"""
 sys.path.append(os.path.join(os.getcwd(), "peft/src/")) #We have to modify the transformer lib as well to enable quantized traning since RandLoRA is not included yet
 from peft import (  # noqa: E402
     LoraConfig,
@@ -293,7 +288,18 @@ def train(
             bias="none",
             task_type="CAUSAL_LM",
             projection_prng_key=int(torch.exp(torch.tensor(3))*3.1415*1000),
-        )        
+        )
+    elif adapter_name == "dora":
+        config = LoraConfig(
+            r=lora_r,
+            use_dora=True,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            lora_dropout=lora_dropout,
+            bias="none",
+            task_type="CAUSAL_LM",
+        )
+         
 
     model = get_peft_model(model, config)
     if adapter_name == "prefix-tuning":
