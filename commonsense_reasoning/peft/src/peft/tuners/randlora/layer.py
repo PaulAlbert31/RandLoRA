@@ -108,7 +108,7 @@ class RandLoraLayer(BaseTunerLayer):
         self.randlora_lambda[adapter_name] = nn.Parameter(torch.zeros(r, self.n), requires_grad=True)
         self.randlora_gamma[adapter_name] = nn.Parameter(torch.ones(self.n, min(self.out_features, self.in_features))/max(self.out_features, self.in_features), requires_grad=True)
 
-        self.scaling[adapter_name] = randlora_alpha / r / math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
+        self.scaling[adapter_name] = randlora_alpha / r * 10#/ math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
 
         # non trainable references to randbasis_A/B buffers
         self.randbasis_A = randbasis_A

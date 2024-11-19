@@ -16,10 +16,10 @@ import fire
 
 import torch
 
-sys.path.insert(0, os.path.join(os.getcwd(), "../peft/src/"))
+sys.path.append(os.path.join(os.getcwd(), "peft/src/"))
 from peft import PeftModel
 from tqdm import tqdm
-sys.path.insert(0, os.path.join(os.getcwd(), "../transformers"))
+sys.path.append(os.path.join(os.getcwd(), "transformers"))
 from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer, AutoModelForCausalLM, AutoTokenizer
 
 if torch.cuda.is_available():
