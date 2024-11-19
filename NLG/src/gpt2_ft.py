@@ -236,6 +236,12 @@ def train_validate(
                 model_path = os.path.join(args.work_dir, f'model.{train_step}.pt')
                 print('saving checkpoint', model_path)
                 torch.save({'model_state_dict': lora.lora_state_dict(model)}, model_path)
+                previous_2_path = os.path.join(args.work_dir, f'model.{train_step - args.save_interval * 2}.pt')
+                print('deleting previous checkpoint', previous_2_path)
+                try:
+                    os.remove(previous_2_path)
+                except OSError:
+                    pass
             distributed_sync(args)
 
         # evaluation interval
@@ -265,7 +271,8 @@ def train_validate(
     if args.rank == 0:
         model_path = os.path.join(args.work_dir, f'model.{train_step}.pt')
         print('saving checkpoint', model_path)
-        torch.save({'model_state_dict': model.state_dict()}, model_path) 
+        torch.save({'model_state_dict': model.state_dict()}, model_path)
+
     distributed_sync(args)
     return train_step
 
