@@ -255,10 +255,11 @@ def train(
         return tokenized_full_prompt
 
 
-    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=use_gradient_checkpointing)
+    if load_8bit or load_4bit:
+        model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=use_gradient_checkpointing)
     if use_gradient_checkpointing:
         model.gradient_checkpointing_enable()
-    #print(model)
+
     if adapter_name == "lora":
         config = LoraConfig(
             r=lora_r,
@@ -279,6 +280,29 @@ def train(
             sparse=sparse,
             very_sparse=very_sparse,
             projection_prng_key=int(torch.exp(torch.tensor(3))*3.1415*1000),
+        )
+    elif adapter_name == "randdora":            
+        config = RandLoraConfig(
+            r=lora_r,
+            randlora_alpha=lora_alpha,
+            randlora_dropout=lora_dropout,
+            target_modules=target_modules,
+            bias="none",
+            task_type="CAUSAL_LM",
+            sparse=sparse,
+            very_sparse=very_sparse,
+            projection_prng_key=int(torch.exp(torch.tensor(3))*3.1415*1000),
+            use_dora=True,
+        )
+    elif adapter_name == "pissa":
+        config = LoraConfig(
+            r=lora_r,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            lora_dropout=lora_dropout,
+            bias="none",
+            task_type="CAUSAL_LM",
+            init_lora_weights="pissa_niter_4",
         )
     elif adapter_name == "vera":            
         config = VeraConfig(
@@ -304,7 +328,7 @@ def train(
     model = get_peft_model(model, config)
     if adapter_name == "prefix-tuning":
         model.to('cuda')
-        
+    print(model)
     if data_path.endswith(".json"):  # todo: support jsonl
         data = load_dataset("json", data_files=data_path)
     else:

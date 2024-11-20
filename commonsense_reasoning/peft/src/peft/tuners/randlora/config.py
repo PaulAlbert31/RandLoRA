@@ -164,6 +164,14 @@ class RandLoraConfig(PeftConfig):
             )
         },
     )
+    use_dora: Optional[bool] = field(
+        default=False,
+        metadata={
+            "help": (
+                "Train RandDoRA: RandLoRA with DoRA's weight normalization strategy"
+            )
+        },
+    )
 
     def __post_init__(self):
         self.peft_type = PeftType.RANDLORA

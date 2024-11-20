@@ -179,7 +179,7 @@ def get_peft_model_state_dict(
             to_return["base_model.vera_A." + adapter_name] = state_dict["base_model.vera_A." + adapter_name]
             to_return["base_model.vera_B." + adapter_name] = state_dict["base_model.vera_B." + adapter_name]
     elif config.peft_type == PeftType.RANDLORA:
-        to_return = {k: state_dict[k] for k in state_dict if "randlora_gamma" in k or "randlora_lambda" in k}
+        to_return = {k: state_dict[k] for k in state_dict if "randlora_" in k}
         if config.save_projection:
             if f"base_model.randbasis_A.{adapter_name}" not in state_dict:
                 raise ValueError(

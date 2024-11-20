@@ -264,6 +264,7 @@ class RandLoraModel(BaseTuner):
             "init_weights": randlora_config.init_weights,
             "loaded_in_8bit": getattr(self.model, "is_loaded_in_8bit", False),
             "loaded_in_4bit": getattr(self.model, "is_loaded_in_4bit", False),
+            "use_dora": randlora_config.use_dora,
         }
         kwargs["bias"] = bias
         if isinstance(target, Linear):
@@ -275,6 +276,7 @@ class RandLoraModel(BaseTuner):
                 randlora_config.randlora_alpha,
                 randlora_config.randlora_dropout,
                 randlora_config.init_weights,
+                randlora_config.use_dora,
             )
         else:
             new_module = self._create_new_module(randlora_config, self.randbasis_A, self.randbasis_B, adapter_name, target, **kwargs)

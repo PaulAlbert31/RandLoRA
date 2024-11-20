@@ -425,6 +425,7 @@ class Linear(nn.Module, LoraLayer):
             lora_dropout=lora_dropout,
             init_lora_weights=init_lora_weights,
             use_rslora=use_rslora,
+            use_dora=use_dora,
         )
         self.is_target_conv_1d_layer = is_target_conv_1d_layer
 
@@ -560,7 +561,6 @@ class Linear(nn.Module, LoraLayer):
     def forward(self, x: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
         self._check_forward_args(x, *args, **kwargs)
         adapter_names = kwargs.pop("adapter_names", None)
-
         if self.disable_adapters:
             if self.merged:
                 self.unmerge()
@@ -665,7 +665,7 @@ class Embedding(nn.Module, LoraLayer):
             self.use_dora[adapter_name] = True
         else:
             self.use_dora[adapter_name] = False
-
+            
         self.set_adapter(self.active_adapters)
 
     def dora_init(self, adapter_name: str) -> None:

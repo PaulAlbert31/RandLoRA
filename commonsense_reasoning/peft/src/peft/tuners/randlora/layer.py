@@ -56,6 +56,7 @@ class RandLoraLayer(BaseTunerLayer):
         # For storing vector scale
         self.randlora_lambda = nn.ParameterDict({})
         self.randlora_gamma = nn.ParameterDict({})
+        self.randlora_m = nn.ParameterDict({})
 
         # Stores a reference to the randbasis_A/B BufferDict.
         # Set to `None` otherwise to avoid computation with random weights
@@ -91,6 +92,7 @@ class RandLoraLayer(BaseTunerLayer):
         randlora_alpha,
         randlora_dropout,
         init_weights,
+        use_dora,
     ):
         if r <= 0:
             raise ValueError(f"`r` should be a positive integer value but the value passed is {r}")
@@ -107,6 +109,12 @@ class RandLoraLayer(BaseTunerLayer):
         self.n = int(n) if n.is_integer() else int(n) + 1 #Full rank
         self.randlora_lambda[adapter_name] = nn.Parameter(torch.zeros(r, self.n), requires_grad=True)
         self.randlora_gamma[adapter_name] = nn.Parameter(torch.ones(self.n, min(self.out_features, self.in_features))/max(self.out_features, self.in_features), requires_grad=True)
+        if use_dora:
+            self.randlora_m[adapter_name] = nn.Parameter(torch.zeros(self.in_features, 1), requires_grad=True)
+            with torch.no_grad():
+                self.randlora_m[adapter_name].data = torch.linalg.norm(self.weight.detach(), dim=1).unsqueeze(1).detach()
+        else:
+            self.randlora_m = None
 
         self.scaling[adapter_name] = randlora_alpha / r * 10#/ math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
 
@@ -174,15 +182,15 @@ class Linear(nn.Linear, RandLoraLayer):
         fan_in_fan_out: bool = False,  # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
         is_target_conv_1d_layer: bool = False,
         init_weights: bool = True,
+        use_dora: bool = False,
         **kwargs,
     ) -> None:
         # this gets the init from nn.Linear's super perspective, i.e. nn.Module.__init__, which should always be called
         super(nn.Linear, self).__init__()
         RandLoraLayer.__init__(self, base_layer, **kwargs)
         self.fan_in_fan_out = fan_in_fan_out
-        
         self._active_adapter = adapter_name
-        self.update_layer(adapter_name, randbasis_A, randbasis_B, r, randlora_alpha, randlora_dropout, init_weights)
+        self.update_layer(adapter_name, randbasis_A, randbasis_B, r, randlora_alpha, randlora_dropout, init_weights, use_dora)
         self.is_target_conv_1d_layer = is_target_conv_1d_layer
 
     def merge(self, safe_merge: bool = False, adapter_names: Optional[List[str]] = None) -> None:
@@ -322,7 +330,13 @@ class Linear(nn.Linear, RandLoraLayer):
                 update_B, update_A, _ = self.get_scaled_bases(active_adapter)
                 x = x.to(update_A.dtype)
                 scaling = self.scaling[active_adapter]
-                result = result + F.linear(F.linear(dropout(x), update_B), update_A) * scaling
+                if self.randlora_m is not None:
+                    update = update_A @ update_B * scaling
+                    weight_update_norm = torch.linalg.norm(update + self.weight, dim=1, keepdim=True).detach()
+                    lora_result = F.linear(F.linear(dropout(x), update_B), update_A) * scaling 
+                    result = (result + lora_result) * (self.randlora_m[active_adapter] / weight_update_norm).view(1, -1)
+                else:
+                    result = result + F.linear(F.linear(dropout(x), update_B), update_A) * scaling
 
         result = result.to(previous_dtype)
         return result
