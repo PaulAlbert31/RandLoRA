@@ -57,6 +57,7 @@ class RandLoraLayer(BaseTunerLayer):
         self.randlora_lambda = nn.ParameterDict({})
         self.randlora_gamma = nn.ParameterDict({})
         self.randlora_m = nn.ParameterDict({})
+        self.randlora_cache_norm_dora = nn.ParameterDict({})
 
         # Stores a reference to the randbasis_A/B BufferDict.
         # Set to `None` otherwise to avoid computation with random weights
@@ -113,8 +114,7 @@ class RandLoraLayer(BaseTunerLayer):
             self.randlora_m[adapter_name] = nn.Parameter(torch.zeros(self.in_features, 1), requires_grad=True)
             with torch.no_grad():
                 self.randlora_m[adapter_name].data = torch.linalg.norm(self.weight.detach(), dim=1).unsqueeze(1).detach()
-        else:
-            self.randlora_m = None
+                self.randlora_cache_norm_dora[adapter_name] = self.randlora_m[adapter_name].data
 
         self.scaling[adapter_name] = randlora_alpha / r * 10#/ math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
 
@@ -218,8 +218,10 @@ class Linear(nn.Linear, RandLoraLayer):
                     # Note that safe_merge will be slower than the normal merge
                     # because of the copy operation.
                     orig_weights = base_layer.weight.data.clone()
-
-                    orig_weights += self.get_delta_weight(active_adapter)
+                    if active_adapter in self.randlora_m.keys():
+                        norm = torch.linalg.norm(orig_weight, dim=1, keepdim=True)
+                        self.randlora_cache_norm_dora[active_adapter] = norm
+                        orig_weight *= (self.randlora_m[active_adapter] / norm).view(1, -1)
 
                     if not torch.isfinite(orig_weights).all():
                         raise ValueError(
@@ -239,7 +241,18 @@ class Linear(nn.Linear, RandLoraLayer):
         while len(self.merged_adapters) > 0:
             active_adapter = self.merged_adapters.pop()
             if active_adapter in self.randlora_lambda.keys():
-                self.get_base_layer().weight.data -= self.get_delta_weight(active_adapter)
+                if active_adapter in self.randlora_m.keys():
+                    ori_weight = self.get_base_layer().weight.data
+                    delta = self.get_delta_weight(active_adapter)
+                    if active_adapter in self.randlora_m.keys():
+                        norm = self.randlora_cache_norm_dora[active_adapter]
+                    else:
+                        norm = self.randlora_m[active_adapter].data
+                        
+                    self.get_base_layer().weight.data = \
+                        ori_weight * (norm / self.randlora_m[active_adapter]).view(1, -1) - delta
+                else:
+                    self.get_base_layer().weight.data -= self.get_delta_weight(active_adapter)
 
     def get_scaled_bases(self, adapter) -> tuple[torch.Tensor, torch.Tensor, torch.dtype]:
         """
@@ -324,13 +337,12 @@ class Linear(nn.Linear, RandLoraLayer):
             result = self.base_layer(x, *args, **kwargs)
             for active_adapter in self.active_adapters:
                 if active_adapter not in self.randlora_lambda.keys():
-                    continue
-                
+                    continue                
                 dropout = self.randlora_dropout[active_adapter]
                 update_B, update_A, _ = self.get_scaled_bases(active_adapter)
                 x = x.to(update_A.dtype)
                 scaling = self.scaling[active_adapter]
-                if self.randlora_m is not None:
+                if active_adapter in self.randlora_m.keys():
                     update = update_A @ update_B * scaling
                     weight_update_norm = torch.linalg.norm(update + self.weight, dim=1, keepdim=True).detach()
                     lora_result = F.linear(F.linear(dropout(x), update_B), update_A) * scaling 
