@@ -485,7 +485,7 @@ class Linear(nn.Module, LoraLayer):
                         base_layer.weight.data += delta_weight
                     else:
                         # handle dora
-                        # since delta_weight already includes scaling, set it to 1 here
+                        # since delta_weight already includes scaling, set it to 1 here                        
                         weight_norm = (
                             self.lora_magnitude_vector[active_adapter]
                             .get_weight_norm(
@@ -500,7 +500,7 @@ class Linear(nn.Module, LoraLayer):
                         dora_factor = self.lora_magnitude_vector[active_adapter].weight / weight_norm
                         dora_factor = transpose(dora_factor.view(-1, 1), self.fan_in_fan_out)
                         new_weight = dora_factor * (base_layer.weight.data + delta_weight)
-                        base_layer.weight.data = new_weight
+                        base_layer.weight.data = new_weight.to(base_layer.weight.data)
 
                 self.merged_adapters.append(active_adapter)
 

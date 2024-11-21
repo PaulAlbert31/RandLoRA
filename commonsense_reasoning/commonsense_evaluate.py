@@ -120,7 +120,7 @@ def main(
     if args.adapter == "LoRA" or args.adapter == "DoRA" or args.adapter == "RandLora":
         print("Merge LoRA/DoRA/RandLora weights into the original weights")
         model = model.merge_and_unload()
-       
+        
     total = len(batches)
     correct = 0
     current = 0

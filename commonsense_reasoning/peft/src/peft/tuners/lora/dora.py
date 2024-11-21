@@ -33,7 +33,7 @@ class DoraLinearLayer(nn.Module):
         weight = weight + scaling * lora_weight
         weight_norm = torch.linalg.norm(weight, dim=1).to(weight.dtype)
         return weight_norm
-
+        
     def update_layer(self, *, base_layer, lora_A, lora_B, scaling, place_on_cpu=False) -> None:
         # temporarily convert fp16 to fp32, as fp16 can cause trouble on CPU with PyTorch < 2.2
         dtype_is_fp16 = lora_A.dtype == torch.float16
@@ -56,7 +56,8 @@ class DoraLinearLayer(nn.Module):
 
             if dtype_is_fp16:
                 lora_weight = lora_weight.half()
-            weight_norm = self.get_weight_norm(weight.to(lora_A.device), lora_weight, scaling)
+                
+            weight_norm = self.get_weight_norm(weight.to(lora_weight.device), lora_weight, scaling)
 
         if place_on_cpu:
             weight_norm = weight_norm.to("cpu")
