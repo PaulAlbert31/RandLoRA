@@ -43,6 +43,23 @@ Follow instructions in the DoRA repository to install the commonsense datasets [
 
 ## Usage
 
+### Training script
+
+The `base_X.sh` files provides examples of how to launch fine-tuning jobs. Here's a snippet illustrating the pattern for LoRA training on the 15k and 170k subset of the commonsense datasets:
+
+```bash
+for model in LLama3;do
+    for n in 15 170;do
+        r=32
+        name="finetuned_result/${model}_lora${r}_${n}k"
+        mkdir $name
+        sh base_lora.sh $r $((2*r)) $name 0 $model $n
+    done
+done
+```
+
+This example demonstrates how to run the `base_lora.sh` script (provided in the repository) for different configurations of the LLaMA-3 model and dataset sizes. The `base_lora.sh` script further calls the `finetune.py` and `commonsense_evaluate.py` scripts with specific parameters.
+
 ### Fine-tuning
 
 The `finetune.py` script provides various command-line arguments for configuring the fine-tuning process. Here's an example of how to run it (refer to `train_phoenix.txt` for more examples):
@@ -101,22 +118,6 @@ CUDA_VISIBLE_DEVICES=0 python commonsense_evaluate.py \
 
 The evaluation script will output the accuracy on the specified dataset and save the detailed results in the `experiment/` directory.
 
-### Training script
-
-The `base_X.sh` files provides examples of how to launch fine-tuning jobs. Here's a snippet illustrating the pattern for LoRA training on the 15k and 170k subset of the commonsense datasets:
-
-```bash
-for model in LLama3;do
-    for n in 15 170;do
-        r=32
-        name="finetuned_result/${model}_lora${r}_${n}k"
-        mkdir $name
-        sh base_lora.sh $r $((2*r)) $name 0 $model $n
-    done
-done
-```
-
-This example demonstrates how to run the `base_lora.sh` script (provided in the repository) for different configurations of the LLaMA-3 model and dataset sizes. The `base_lora.sh` script further calls the `finetune.py` and `commonsense_evaluate.py` scripts with specific parameters.
 
 ## Parsing experiment results
 
