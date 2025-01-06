@@ -1,7 +1,8 @@
-rank=1024
-name=vera${rank}
+rank=20
+name=randlora${rank}
+iter=26290
 
-python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
+#python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
     --valid_data ./data/e2e/valid.jsonl \
     --train_batch_size 8 \
@@ -12,7 +13,7 @@ python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --init_checkpoint ./pretrained_checkpoints/gpt2-medium-pytorch_model.bin \
     --platform local \
     --clip 0.0 \
-    --lr 0.002 \
+    --lr 0.0002 \
     --weight_decay 0.01 \
     --correct_bias \
     --adam_beta2 0.999 \
@@ -28,7 +29,7 @@ python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --work_dir ./trained_models/GPT2_M/${name}_e2e \
     --fp16 \
     --random_seed 1 \
-    --vera
+    --randlora
 
 python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_beam.py \
     --data ./data/e2e/test.jsonl \
@@ -48,7 +49,7 @@ python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_beam.py \
     --work_dir ./trained_models/GPT2_M/${name}_e2e \
     --output_file predict.${iter}.b10p08r4.jsonl \
     --random_seed 1 \
-    --vera
+    --randlora
 
 python src/gpt2_decode.py \
     --vocab ./vocab \
@@ -57,12 +58,12 @@ python src/gpt2_decode.py \
     --output_ref_file e2e_ref_${name}.txt \
     --output_pred_file e2e_pred_${name}.txt
 
-python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p
+python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p > logs_${name}.txt
 
 rank=16
 name=lora${rank}
 
-python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
+#python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
     --valid_data ./data/e2e/valid.jsonl \
     --train_batch_size 8 \
@@ -115,13 +116,12 @@ python src/gpt2_decode.py \
     --output_ref_file e2e_ref_${name}.txt \
     --output_pred_file e2e_pred_${name}.txt
 
-python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p
+python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p > logs_${name}.txt
 
+rank=1024
+name=vera${rank}
 
-rank=20
-name=randlora${rank}
-
-python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
+#python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
     --valid_data ./data/e2e/valid.jsonl \
     --train_batch_size 8 \
@@ -132,7 +132,7 @@ python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --init_checkpoint ./pretrained_checkpoints/gpt2-medium-pytorch_model.bin \
     --platform local \
     --clip 0.0 \
-    --lr 0.0002 \
+    --lr 0.02 \
     --weight_decay 0.01 \
     --correct_bias \
     --adam_beta2 0.999 \
@@ -148,7 +148,7 @@ python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --work_dir ./trained_models/GPT2_M/${name}_e2e \
     --fp16 \
     --random_seed 1 \
-    --randlora
+    --vera
 
 python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_beam.py \
     --data ./data/e2e/test.jsonl \
@@ -168,7 +168,7 @@ python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_beam.py \
     --work_dir ./trained_models/GPT2_M/${name}_e2e \
     --output_file predict.${iter}.b10p08r4.jsonl \
     --random_seed 1 \
-    --randlora
+    --vera
 
 python src/gpt2_decode.py \
     --vocab ./vocab \
@@ -177,4 +177,4 @@ python src/gpt2_decode.py \
     --output_ref_file e2e_ref_${name}.txt \
     --output_pred_file e2e_pred_${name}.txt
 
-python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p
+python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p > logs_${name}.txt

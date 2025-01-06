@@ -40,7 +40,7 @@ CUDA_VISIBLE_DEVICES=$4 python finetune.py \
     --learning_rate 1e-2 --cutoff_len 256 \
     --adapter_name vera \
     --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]'\
-    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing --load_4bit
+    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 		    --model $model \

@@ -16,7 +16,7 @@ if [ "$5" = "LLama3" ]
 then
     base='meta-llama/Meta-Llama-3-8B'
     model='LLaMA3-8B'
-    bs=16
+    bs=4
 fi
 if [ "$5" = "LLama3-70" ]
 then
@@ -31,7 +31,7 @@ then
     bs=16
 fi
 echo $base
-'''
+
 CUDA_VISIBLE_DEVICES=$4 python finetune.py \
     --base_model $base \
     --data_path commonsense_$6k.json \
@@ -40,8 +40,8 @@ CUDA_VISIBLE_DEVICES=$4 python finetune.py \
     --learning_rate 1e-4 --cutoff_len 256 \
     --adapter_name lora \
     --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]'\
-    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing --load_4bit
-'''
+    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing
+
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
     --adapter LoRA \

@@ -294,16 +294,6 @@ def train(
             projection_prng_key=int(torch.exp(torch.tensor(3))*3.1415*1000),
             use_dora=True,
         )
-    elif adapter_name == "pissa":
-        config = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            target_modules=target_modules,
-            lora_dropout=lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-            init_lora_weights="pissa_niter_4",
-        )
     elif adapter_name == "vera":            
         config = VeraConfig(
             r=lora_r,

@@ -28,7 +28,7 @@ if [ "$5" = "Phi3" ]
 then
     base='microsoft/Phi-3-mini-4k-instruct'
     model='Phi3'
-    bs=8
+    bs=16
 fi
 echo $base
 
@@ -37,16 +37,22 @@ CUDA_VISIBLE_DEVICES=$4 python finetune.py \
     --data_path commonsense_$6k.json \
     --output_dir $3 \
     --batch_size 16  --micro_batch_size $bs --num_epochs 1 \
-    --learning_rate 3e-4 --cutoff_len 256 --val_set_size 120 \
-    --eval_step 200 --save_step 200 --adapter_name lorand \
+    --learning_rate 1e-4 --cutoff_len 256 \
+    --adapter_name dora \
     --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]'\
-    --param-type 'nola' \
-    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing
-'''
+    --lora_r $1 --lora_alpha $2 --use_gradient_checkpointing 
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter LoRAND \
+    --adapter DoRA \
+    --dataset openbookqa \
+    --base_model $base \
+    --batch_size 1 \
+    --lora_weights $3|tee -a $3/openbookqa.txt
+
+CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
+    --model $model \
+    --adapter DoRA \
     --dataset ARC-Challenge \
     --base_model $base \
     --batch_size 1 \
@@ -54,7 +60,15 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter LoRAND \
+    --adapter DoRA \
+    --dataset boolq \
+    --base_model $base \
+    --batch_size 1 \
+    --lora_weights $3|tee -a $3/boolq.txt
+
+CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
+    --model $model \
+    --adapter DoRA \
     --dataset social_i_qa \
     --base_model $base \
     --batch_size 1 \
@@ -63,15 +77,7 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter LoRAND \
-    --dataset boolq \
-    --base_model $base \
-    --batch_size 1 \
-    --lora_weights $3|tee -a $3/boolq.txt
-
-CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
-    --model $model \
-    --adapter LoRAND \
+    --adapter DoRA \
     --dataset piqa \
     --base_model $base \
     --batch_size 1 \
@@ -79,7 +85,7 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter LoRAND \
+    --adapter DoRA \
     --dataset hellaswag \
     --base_model $base \
     --batch_size 1 \
@@ -87,7 +93,7 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter LoRAND \
+    --adapter DoRA \
     --dataset winogrande \
     --base_model $base \
     --batch_size 1 \
@@ -95,18 +101,9 @@ CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
 
 CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
     --model $model \
-    --adapter LoRAND \
+    --adapter DoRA \
     --dataset ARC-Easy \
     --base_model $base \
     --batch_size 1 \
     --lora_weights $3|tee -a $3/ARC-Easy.txt
-
-CUDA_VISIBLE_DEVICES=$4 python commonsense_evaluate.py \
-    --model $model \
-    --adapter LoRAND \
-    --dataset openbookqa \
-    --base_model $base \
-    --batch_size 1 \
-    --lora_weights $3|tee -a $3/openbookqa.txt
-
 

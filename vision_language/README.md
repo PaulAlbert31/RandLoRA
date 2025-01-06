@@ -46,8 +46,8 @@ accelerate launch src/finetune.py --model <model_name> --train-dataset <dataset_
 
 * --data-ratio: The number of training samples per class (int) or use a float between 0.0 and 1.0 for a fraction of the dataset (add '.' for fractions).
 
-* --param-type: The PEFT method to use (randlora, lora, vera, nola).
-
+* --param-type: The PEFT method to use (randlora, lora, vera, nola). Omit for full finetuning.
+ 
 * --rank: The rank for NoLA, LoRA, VeRA, or RandLoRA.
 
 * --lr: The learning rate.
