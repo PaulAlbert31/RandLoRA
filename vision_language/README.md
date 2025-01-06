@@ -20,7 +20,7 @@ This repository provides a PyTorch implementation for fine-tuning vision models,
 Install dependencies: It is recommended to create a virtual environment.
 
 ```sh
-conda install -f randlora_vl.yml
+conda env create -f randlora_vl.yml
 conda activate randlora_vl
 export PYTHONPATH="$PYTHONPATH:$PWD"
 ```

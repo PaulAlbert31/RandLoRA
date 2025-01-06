@@ -30,10 +30,10 @@ This repository provides Python scripts for fine-tuning and evaluating large lan
 * Fire library
 * Bitsandbytes (for 4-bit and 8-bit quantization)
 
-You can install the necessary libraries using pip:
+You can install the necessary libraries using conda:
 
 ```bash
-conda install -f env.yml
+conda env create -f env.yml
 conda activate randlora_cs
 ```
 
