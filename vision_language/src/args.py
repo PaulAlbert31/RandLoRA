@@ -116,6 +116,12 @@ def parse_arguments():
         help="Train both language and vision encoders of CLIP"
     )
     parser.add_argument(
+        "--lp-clip",
+        default=False,
+        action='store_true',
+        help="Train PEFT method and the classifier"
+    )
+    parser.add_argument(
         "--mlp-only",
         default=False,
         action='store_true',

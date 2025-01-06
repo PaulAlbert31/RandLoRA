@@ -67,7 +67,7 @@ def eval_single_dataset(model, dataloader, args, train=False):
 
 
 def get_n_shots(dataset, shots, n_class, args):
-    path = f"{args.save}/{args.train_dataset}/{args.semi}_shots_{args.seed}.pt"
+    path = f"{args.save}/{args.train_dataset}/{args.data_ratio}_shots_{args.seed}.pt"
     if os.path.isfile(path):
         return torch.load(path)
     

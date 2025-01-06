@@ -116,7 +116,7 @@ class RandLoraLayer(BaseTunerLayer):
                 self.randlora_m[adapter_name].data = torch.linalg.norm(self.weight.detach(), dim=1).unsqueeze(1).detach()
                 self.randlora_cache_norm_dora[adapter_name] = self.randlora_m[adapter_name].data
 
-        self.scaling[adapter_name] = randlora_alpha / r * 10#/ math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
+        self.scaling[adapter_name] = randlora_alpha / r / math.sqrt(self.n)#* 10#/ math.sqrt(self.n)
 
         # non trainable references to randbasis_A/B buffers
         self.randbasis_A = randbasis_A

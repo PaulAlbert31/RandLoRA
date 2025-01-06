@@ -12,8 +12,10 @@ from src.timm_encoder import TimmModel, TimmRandLoRA
 def get_model(args):
     if args.full_clip:
         return CLIPVL(args)
+    if args.lp_clip:
+        return CLIPLP(args)
     if args.model not in ["ViT-B-32", "ViT-B-16", "ViT-L-14", "ViT-g-14", "ViT-H-14"]:#open_clip encoders
-        return TimmClassifier(args)
+        return TimmClassifier(args)    
     return CLIPClassifier(args)
 
 def get_encoder(args):
@@ -130,6 +132,32 @@ class CLIPClassifier(nn.Module):
         self.classifier = build_classification_head(self.encoder.model, self.args).to(self.classifier.weight)
         for p in self.classifier.parameters():
             p.requires_grad = False
+
+class CLIPLP(nn.Module):
+    # CLIP with a learnable classifier
+    def __init__(self, args):
+        super().__init__()
+        self.args = args
+        self.encoder = get_encoder(args)
+        self.classifier = build_classification_head(self.encoder.model, args)
+        self.classifier.weight.data.normal_(mean=0.0, std=0.01)
+        self.classifier.bias.data *= 0.
+        
+    def forward(self, x, y=None):
+        feats = self.encoder.model.visual(x)
+        feats = feats / feats.norm(dim=-1, keepdim=True)
+        logits = self.classifier(feats)
+        if y is not None:
+            return F.cross_entropy(logits, y)
+        return logits
+
+    def update_dataset(self, dataset_name):
+        prev_dataset = self.args.train_dataset
+        self.args.train_dataset = dataset_name
+        self.classifier = build_classification_head(self.encoder.model, self.args).to(self.classifier.weight)
+        for p in self.classifier.parameters():
+            p.requires_grad = False
+
 
 
 class TimmClassifier(nn.Module):

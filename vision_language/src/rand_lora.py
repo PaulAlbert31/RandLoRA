@@ -167,8 +167,8 @@ class LoRALayer():
                 self.register_parameter(lora_name+'_A', nn.Parameter(eval(f'self.{param_name}').new_zeros((self.n, min(shape)))))#Train on the smaller matrix side
                 eval(f'self.{lora_name}_B').data = torch.ones(eval(f'self.{lora_name}_B').shape) / max(eval(f'self.{lora_name}_B').shape)
             elif self.param_type == 'lora':
-                self.register_parameter(lora_name+'_B', nn.Parameter(eval(f'self.{param_name}').new_zeros((shape[0], self.r))))
-                self.register_parameter(lora_name+'_A', nn.Parameter(eval(f'self.{param_name}').new_zeros((self.r, shape[1]))))
+                self.register_parameter(lora_name+'_B', nn.Parameter(eval(f'self.{param_name}').new_zeros((1, shape[0], self.r))))
+                self.register_parameter(lora_name+'_A', nn.Parameter(eval(f'self.{param_name}').new_zeros((1, self.r, shape[1]))))
                 nn.init.kaiming_uniform_(eval(f'self.{lora_name}_A'), a=math.sqrt(5))
             else:
                 raise NotImplementedError

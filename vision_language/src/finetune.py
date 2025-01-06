@@ -86,13 +86,16 @@ def finetune(args):
     num_param = sum([p.numel() for p in params_encoder])
     params_classifier = [p for p in model.classifier.parameters() if p.requires_grad]
     
-    if len(params_classifier) > 0:#DinoV2
+    if len(params_classifier) > 0:#DinoV2 or CLIPLP
         num_paramc = sum([p.numel() for p in params_classifier])
         
         print(f"Training {num_param:,} encoder parameters and {num_paramc:,} classifier. Total {num_param + num_paramc:,}")
-            
-        optimizer = torch.optim.AdamW([{'params':params_encoder},
-                                       {'params':params_classifier, 'lr':1e-3}], lr=args.lr, weight_decay=args.wd)
+        if args.lp_clip:
+            optimizer = torch.optim.AdamW([{'params':params_encoder},
+                                           {'params':params_classifier, 'lr':0.02}], lr=args.lr, weight_decay=args.wd)
+        else:
+            optimizer = torch.optim.AdamW([{'params':params_encoder},
+                                           {'params':params_classifier, 'lr':1e-3}], lr=args.lr, weight_decay=args.wd)
     else:
         print(f"Training {num_param:,} parameters")    
         optimizer = torch.optim.AdamW(params_encoder, lr=args.lr, weight_decay=args.wd)        
@@ -143,11 +146,11 @@ def finetune(args):
     print("".join(string))
 
     if not args.no_log:
-        with open(os.path.join(args.fname, str(args.seed), "results.txt"), 'a') as f:
+        with open(os.path.join(args.fname, str(args.data_ratio), str(args.seed), "results.txt"), 'a') as f:
             f.writelines(string)
 
     if False:#No weight saving at the moment
-        torch.save(model.state_dict(), os.path.join(args.fname, str(args.seed), 'weights.pth'))
+        torch.save(model.state_dict(), os.path.join(args.fname, str(args.data_ratio), str(args.seed), 'weights.pth'))
     
     return metrics['top1']
 
@@ -223,9 +226,9 @@ if __name__ == "__main__":
         args.num_basis = 1000 #Later automatically adjusted for each layer
     else:
         raise NotImplementedError
-                
+
     if args.fname is not None:
-        filename = os.path.join(args.fname, str(args.seed), "results.txt")
+        filename = os.path.join(args.fname, str(args.data_ratio), str(args.seed), "results.txt")
         if os.path.isfile(filename):
             if not args.merge:
                 os.remove(filename)
@@ -252,5 +255,5 @@ if __name__ == "__main__":
         finetune(args)
         
     if not args.no_log:
-        with open(os.path.join(args.fname, str(args.seed), "results.txt"), 'a') as f:
+        with open(os.path.join(args.fname, str(args.data_ratio), str(args.seed), "results.txt"), 'a') as f:
             f.writelines([f"{args}"+"\n"])
