@@ -1,117 +1,125 @@
-<!---
-Copyright 2023 The HuggingFace Team. All rights reserved.
+# Parameter-Efficient Fine-tuning for Large Language Models
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This repository provides Python scripts for fine-tuning and evaluating large language models (LLMs) using RandLoRA and various parameter-efficient fine-tuning (PEFT) techniques. Code based on DoRA's [implementation](https://github.com/NVlabs/DoRA/tree/main/commonsense_reasoning)
 
-    http://www.apache.org/licenses/LICENSE-2.0
+## Key Functionalities
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
+* **Fine-tuning:** The `finetune.py` script allows you to fine-tune pre-trained LLMs on custom datasets. It supports different PEFT methods to reduce the number of trainable parameters.
+* **Evaluation:** The `commonsense_evaluate.py` script evaluates the performance of fine-tuned models on common sense reasoning benchmark datasets.
 
-# Finetuning LLaMA on commonsense reasoning tasks using DoRA
+## Supported Models
 
-This directory includes the DoRA implementation and guidelines for reproducing the results in our paper.
+* LLaMA-3 (8B and 70B)
+* Qwen2
+* Phi3
 
-## Setup
-1. Install dependencies
+## Supported PEFT Methods
+
+* LoRA (Low-Rank Adaptation)
+* RandLoRA (Randomized Low-Rank Adaptation)
+* Vera
+* DoRA
+
+## Requirements
+
+* Python 3.8+
+* PyTorch
+* Transformers library
+* Peft library
+* Datasets library
+* Fire library
+* Bitsandbytes (for 4-bit and 8-bit quantization)
+
+You can install the necessary libraries using pip:
+
 ```bash
-conda create -n dora_llama python=3.10
-conda activate dora_llama
-pip install -r requirements.txt
+conda install -f env.yml
+conda activate randlora_cs
 ```
 
-## Datasets
-1. Download the complete commonsense datasets from [here](https://github.com/AGI-Edgerunners/LLM-Adapters/tree/main/dataset) and download the commonsense 170k finetuning dataset from [here](https://github.com/AGI-Edgerunners/LLM-Adapters/blob/main/ft-training_set/commonsense_170k.json), then organize the data as follows
+## Commonsense datasets
+
+Follow instructions in the DoRA repository to install the commonsense datasets [here](https://github.com/NVlabs/DoRA/tree/main/commonsense_reasoning#datasets).
+
+## Usage
+
+### Fine-tuning
+
+The `finetune.py` script provides various command-line arguments for configuring the fine-tuning process. Here's an example of how to run it (refer to `train_phoenix.txt` for more examples):
+
 ```bash
-# Store the complete commonsense datasets
-./dataset
-# rest of the files
-./experiment
-./peft
-# Finetuning commonsense dataset
-./commonsense_170k.json
-...
+CUDA_VISIBLE_DEVICES=0 python finetune.py \
+    --base_model meta-llama/Meta-Llama-3-8B \
+    --data_path commonsense_15k.json \
+    --output_dir finetuned_result/LLama3_lora32_15k \
+    --batch_size 16  --micro_batch_size 4 --num_epochs 1 \
+    --learning_rate 1e-4 --cutoff_len 256 \
+    --adapter_name lora \
+    --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]' \
+    --lora_r 32 --lora_alpha 64 --use_gradient_checkpointing
 ```
 
-## Code Structure
+**Explanation of key arguments:**
 
-Refer to `./peft/src/peft/tuners/dora.py` for the implementation of DoRA.
+* `--base_model`: The name or path of the pre-trained language model.
+* `--data_path`: Path to the training data in JSON format.
+* `--output_dir`: Directory to save the fine-tuned model.
+* `--batch_size`: The overall batch size.
+* `--micro_batch_size`: The batch size per GPU.
+* `--num_epochs`: Number of training epochs.
+* `--learning_rate`: Learning rate for the optimizer.
+* `--cutoff_len`: Maximum sequence length.
+* `--adapter_name`: The PEFT method to use (e.g., `lora`, `randlora`, `vera`, `dora`).
+* `--target_modules`: The modules in the model to apply the PEFT method to.
+* `--lora_r`: The rank of the LoRA adapters.
+* `--lora_alpha`: The scaling factor for the LoRA adapters.
+* `--use_gradient_checkpointing`: Enables gradient checkpointing to reduce memory usage.
+* `--load_4bit`: Enables quantized training QLoRA style.
 
-Refer to `./finetune.py` for finetuning LLaMA using DoRA.
+### Evaluation
 
-Refer to `./commonsense_evaluate.py` for the evaluation of the finetuned model.
+The `commonsense_evaluate.py` script evaluates the fine-tuned model on various common sense reasoning datasets. Here's an example of how to run it:
 
-## Finetuning and Evaluation
-
-### Finetuning (`./llama_7B_Dora.sh`)
-This file contains the code to finetune LLaMA-7B using DoRA. User can specify different DoRA configuration for finetuning. To be specific, the first argument denotes the rank r, the second argument specifies the corresponding alpha, the third argument indicates the destination for saving the fine-tuned model, and the last argument determines the GPU to use.
- 
-An example could be:
-```
-sh llama_7B_Dora.sh 32 64 ./finetuned_result/dora_r32 0
-```
-
-### Finetuning (`./llama_7B_Dora_qkv.sh`)
-This file contains the code to finetune LLaMA-7B using DoRA but with more customizability, that is user can further specify which modules to only finetune the magnitude component of DoRA by changing `--Wdecompose_target_modules`, please refer to Sec. 5.6 in the paper for more details.
-
-An example could be:
-```
-sh llama_7B_Dora_qkv.sh 32 64 ./finetuned_result/dora_qkv_r32 0
-```
-
-### Evaluation and DoRA weights
-
-You can directly download the finetuned DoRA weights from [google drive](https://drive.google.com/drive/folders/1tFVtNcpfwdCLQTrHpP-1LJiq5jH3reUc?usp=sharing) and evaluate them with `llama_7B_Dora_eval.sh` as describe below to reproduce the result reported in the paper.
-
-This file contains the code to evaluate LLaMA-7B finetuned with DoRA on the eight commonsense reasoning tasks. The first argument is the address of the DoRA weight, the second argument specifies where you would like to save the evaluation result, and the last argument determines which GPU to use.
-
-An example could be:
-```
-sh llama_7B_Dora_eval.sh ./finetuned_result/dora_r32 0
+```bash
+CUDA_VISIBLE_DEVICES=0 python commonsense_evaluate.py \
+    --model LLama3-8B \
+    --adapter LoRA \
+    --dataset openbookqa \
+    --base_model meta-llama/Meta-Llama-3-8B \
+    --batch_size 1 \
+    --lora_weights finetuned_result/LLama3_lora32_15k
 ```
 
-### Finetuning and Evaluating LLaMA2-7B & LLaMA3-8B 
-This file contains the code to finetune LLaMA2-7B/LLaMA3-8B using DoRA. User can specify different DoRA configuration for finetuning. To be specific, the first argument denotes the rank r, the second argument specifies the corresponding alpha, the third argument indicates the destination for saving the fine-tuned model, and the last argument determines the GPU to use.
-An example could be:
+**Explanation of key arguments:**
+
+* `--model`: The name of the model architecture (e.g., `LLaMA3-8B`).
+* `--adapter`: The PEFT method used during fine-tuning (e.g., `LoRA`).
+* `--dataset`: The name of the evaluation dataset (e.g., `openbookqa`, `ARC-Challenge`, etc.).
+* `--base_model`: The name or path of the pre-trained language model.
+* `--batch_size`: The batch size for evaluation.
+* `--lora_weights`: Path to the directory containing the fine-tuned adapter weights.
+
+The evaluation script will output the accuracy on the specified dataset and save the detailed results in the `experiment/` directory.
+
+### Training script
+
+The `base_X.sh` files provides examples of how to launch fine-tuning jobs. Here's a snippet illustrating the pattern for LoRA training on the 15k and 170k subset of the commonsense datasets:
+
+```bash
+for model in LLama3;do
+    for n in 15 170;do
+        r=32
+        name="finetuned_result/${model}_lora${r}_${n}k"
+        mkdir $name
+        sh base_lora.sh $r $((2*r)) $name 0 $model $n
+    done
+done
 ```
-sh llama2_7B_DoRA_r.sh 32 64 ./finetuned_result/r32_lr2e-4 0
-sh llama3_8B_DoRA_r.sh 32 64 ./finetuned_result/r32_lr1e-4 0
-```
-You can also directly download the finetuned DoRA weights from [google drive](https://drive.google.com/drive/folders/1tFVtNcpfwdCLQTrHpP-1LJiq5jH3reUc?usp=sharing) and evaluate them with `llama2_7B_Dora_eval.sh` and `llama3_8B_Dora_eval.sh` to reproduce the result reported in the paper.
 
-## Accuracy comparison of LoRA and DoRA with varying ranks for LLaMA-7B on the commonsense reasoning tasks
-| Model                 | r | lr |    BoolQ  |  PIQA  |  SIQA  |  HellaSwag  |  WinoGrande  |  ARC-e  |  ARC-c  |  OBQA  |  Average  |
-|-----------------------|---------|-------|---------|--------|--------|-------------|--------------|---------|---------|--------|-----------|
-| LLaMA-7B-LoRA		  |   4   | 3e-4 |     2.3 | 46.1 |18.3 |19.7| 55.2| 65.4| 51.9 | 57 | 39.5    |
-| LLaMA-7B-LoRA		  |   8   | 3e-4 |    31.3 | 57.0  |  44.0 | 11.8 | 43.3 | 45.7 | 39.2 | 53.8 | 40.7     |
-| LLaMA-7B-LoRA		  |   16  | 3e-4 |   69.9 | 77.8 | 75.1 | 72.1 | 55.8 | 77.1 | 62.2 | 78.0 | 70.9    |
-| LLaMA-7B-LoRA		  |   32  |3e-4 |    67.5  |  80.8  |  78.2  |  83.4  |  80.4   |  78.0   |  62.6   |  79.1  |  76.3     |
-| LLaMA-7B-LoRA		  |   64  |3e-4 |    66.7 | 79.1 | 75.7 | 17.6 | 78.8 | 73.3 | 59.6 | 75.2 | 65.8    |
-| LLaMA-7B-DoRA 	  |  [4](https://drive.google.com/drive/folders/1JjFg66znyMEJqfcDuDC9joIOJu2biH61?usp=drive_link)    | 2e-4 |   51.3 | 42.2 | 77.8 | 25.4 | 78.8 | 78.7 | 62.5 | 78.6 | **61.9**   |
-| LLaMA-7B-DoRA 	  |   [8](https://drive.google.com/drive/folders/1nf4JDSC9KhHUvxEeBfZjb6skZ5kubAIf?usp=drive_link)   | 2e-4 |    69.9 | 81.8 | 79.7 | 85.2 | 80.1 | 81.5 | 65.7 | 79.8 | **77.9**   |
-| LLaMA-7B-DoRA		  |  [16](https://drive.google.com/drive/folders/1cKCXN168uv1bWkI00d20FvyVeZTMU8Ky?usp=drive_link)   | 2e-4 |   70.0 | 82.6 | 79.7 | 83.2 | 80.6 | 80.6 | 65.4 | 77.6 | **77.5**   |
-| LLaMA-7B-DoRA 	  |  [32](https://drive.google.com/drive/folders/1Kz27h5BqNv3NOLdH2UhDf12C2JtwJe0Q?usp=drive_link)   | 1e-4 |   69.7 | 83.4 | 78.6 | 87.2 | 81.0 | 81.9 | 66.2 | 79.2 | **78.4**   |
-| LLaMA-7B-DoRA		  |  [64](https://drive.google.com/drive/folders/1ts7TAUYlfHKHngUH4XTQiEFIIuxBJhrD?usp=drive_link)    | 2e-4 |   70.1 | 82.0 | 75.6 | 85.9 | 79.7 | 79.1 | 63.7 | 78.4 | **76.8**  |
+This example demonstrates how to run the `base_lora.sh` script (provided in the repository) for different configurations of the LLaMA-3 model and dataset sizes. The `base_lora.sh` script further calls the `finetune.py` and `commonsense_evaluate.py` scripts with specific parameters.
 
-## Accuracy comparison of LoRA and DoRA for LLaMA2-7B on the commonsense reasoning tasks
-| Model                 | r | lr |    BoolQ  |  PIQA  |  SIQA  |  HellaSwag  |  WinoGrande  |  ARC-e  |  ARC-c  |  OBQA  |  Average  |
-|-----------------------|---------|-------|---------|--------|--------|-------------|--------------|---------|---------|--------|-----------|
-| LLaMA2-7B-LoRA		  |   32  |3e-4 |    69.8 | 79.9| 79.5| 83.6| 82.6| 79.8|64.7| 81.0| 77.6    |
-| LLaMA2-7B-DoRA		  |  [16](https://drive.google.com/drive/folders/1lMn7WKLw5aQQqwnFnuDpsM3c9FsQtpl2?usp=drive_link)   | 2e-4 |   72.0 |83.1 |79.9| 89.1 |83.0| 84.5| 71.0 |81.2 |**80.5**  |
-| LLaMA2-7B-DoRA 	  |  [32](https://drive.google.com/drive/folders/1x2qamDlNRgNtBBi-tPrZ3UTYXdObtskE?usp=drive_link)   | 2e-4 |   71.8 |83.7 |76.0 |89.1 |82.6 |83.7 |68.2| 82.4 |**79.7**   |
-## Accuracy comparison of LoRA and DoRA for LLaMA3-8B on the commonsense reasoning tasks
-| Model                 | r | lr |    BoolQ  |  PIQA  |  SIQA  |  HellaSwag  |  WinoGrande  |  ARC-e  |  ARC-c  |  OBQA  |  Average  |
-|-----------------------|---------|-------|---------|--------|--------|-------------|--------------|---------|---------|--------|-----------|
-| LLaMA3-8B-LoRA		  |   32  |3e-4 |    70.8 |85.2| 79.9| 91.7 |84.3 |84.2| 71.2| 79.0| 80.8    |
-| LLaMA3-8B-DoRA		  |  [16](https://drive.google.com/drive/folders/1WHH_c5sGIdybPZt2Cuk0uEQrKtUOAk5v?usp=drive_link)   | 1e-4 |   74.5 |88.8 |80.3| 95.5| 84.7| 90.1| 79.1| 87.2| **85.0**   |
-| LLaMA3-8B-DoRA 	  |  [32](https://drive.google.com/drive/folders/107-Qjf-odzG7q7uMonLy_ulwzhE5URgb?usp=drive_link)   | 1e-4 |   74.6| 89.3| 79.9 |95.5| 85.6| 90.5| 80.4 |85.8 |**85.2**  |
-## Acknowledgement
-We greatly appreciate the contributions of two remarkable repositories: [LLM-Adapter](https://github.com/AGI-Edgerunners/LLM-Adapters), [PEFT](https://github.com/huggingface/peft). These projects have significantly benefited our work.
+## Parsing experiment results
 
+The final results can be obtained when finetuning has completed. Use the `python parse_exp_all.py finetuned_result/LLama3_lora32_15k` command to parse.
 
+**Note:** Adapt the paths and model names according to your setup.
