@@ -121,6 +121,12 @@ The evaluation script will output the accuracy on the specified dataset and save
 
 ## Parsing experiment results
 
-The final results can be obtained when finetuning has completed. Use the `python parse_exp_all.py finetuned_result/LLama3_lora32_15k` command to parse.
+The final results can be obtained when finetuning has completed. Use the
+
+```bash
+python parse_exp_all.py finetuned_result/LLama3_lora32_15k
+```
+
+command to parse.
 
 **Note:** Adapt the paths and model names according to your setup.
