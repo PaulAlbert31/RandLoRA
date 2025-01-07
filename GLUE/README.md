@@ -1,6 +1,7 @@
 # Parameter-Efficient Fine-tuning on GLUE
 
 This repository provides scripts for fine-tuning pre-trained language models on the GLUE benchmark using parameter-efficient techniques like LoRA, RandLoRA, and VeRA. It also includes a script to parse and aggregate the evaluation results.
+This code is based of Huggingface's GLUE [example](https://github.com/huggingface/transformers/tree/main/examples/pytorch/text-classification).
 
 ## Scripts
 
