@@ -22,7 +22,7 @@ Through extensive experimentation across vision, language, and vision-language b
 1. Clone: `git clone https://github.com/PaulAlbert31/RandLoRA.git && cd RandLoRA`
 2. Environment: `conda create -n randlora_peft python=3.12 && conda activate randlora_peft`
 3. PyTorch: See [pytorch.org](https://pytorch.org/get-started/locally/) for your CUDA version, example: `conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia` (adjust as needed)
-4. Dependencies: `pip install transformers accelerate tokenizers==0.20.0`
+4. Dependencies: `pip install transformers accelerate`
 
 ### Usage Examples
 
