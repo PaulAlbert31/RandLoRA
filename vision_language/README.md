@@ -5,9 +5,9 @@ This repository provides a PyTorch implementation for fine-tuning vision models,
 ## Key Features
 
 * **Parameter-Efficient Fine-tuning (PEFT):** Supports several PEFT techniques including:
-    * **LoRA (Low-Rank Adaptation):**  Fine-tunes by adding low-rank matrices to existing weights.
-    * **VeRA (Versatile Randomly initialized Adaptation):**  Uses randomly initialized trainable matrices.
-    * **NoLA (No-shot Low-Rank Adaptation):** A method likely inspired by LoRA for few-shot learning.
+    * **LoRA:**  Fine-tunes by adding low-rank matrices to existing weights.
+    * **VeRA:**  Uses randomly initialized trainable matrices.
+    * **NoLA:** A method likely inspired by LoRA for few-shot learning.
     * **RandLoRA:**  Experiments with random combinations of LoRA layers.
 * **Full Fine-tuning:**  Option to fine-tune the entire model.
 * **Few-Shot Learning:** Designed to work effectively with limited training data, allowing specification of the number of samples per class.
