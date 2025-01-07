@@ -1,16 +1,6 @@
 # Adapting GPT-2 using LoRA
 
-This folder contains the implementation of LoRA in GPT-2 using the Python package `lora` and steps to replicate the results in our recent paper
-
-**LoRA: Low-Rank Adaptation of Large Language Models** <br>
-*Edward J. Hu\*, Yelong Shen\*, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu Chen* <br>
-Paper: https://arxiv.org/abs/2106.09685 <br>
-
-<p>
-<img src="figures/LoRA_GPT2.PNG" width="800" >
-</p>
-
-This repo reproduces our experiments on GPT-2.
+This folder contains the implementation of RandLoRA for GPT-2 for the E2E dataset. This codebase is based of LoRA's NLG [implementation](https://github.com/microsoft/LoRA/tree/main/examples/NLG).
 
 ## Repository Overview
 
@@ -23,31 +13,27 @@ There are several directories in this repo:
 
 ## Getting Started
 
- 1. You can start with the following docker image: `nvcr.io/nvidia/pytorch:20.03-py3` on a GPU-capable machine, but any generic PyTorch image should work.
- ```
- docker run -it nvcr.io/nvidia/pytorch:20.03-py3
- ```
+### Dependencies
 
- 2. Clone the repo and install dependencies in a virtual environment (remove sudo if running in docker container):
- ```
- sudo apt-get update
- sudo apt-get -y install git jq virtualenv
- git clone https://github.com/microsoft/LoRA.git; cd LoRA
- virtualenv -p `which python3` ./venv
- . ./venv/bin/activate
- pip install -r requirement.txt
- bash download_pretrained_checkpoints.sh
- bash create_datasets.sh
- cd ./eval
- bash download_evalscript.sh
- cd ..
- ```
+The base dependencies should be enough, see [here](https://github.com/PaulAlbert31/RandLoRA/tree/main?tab=readme-ov-file#quickstart)
 
-#### Now we are ready to replicate the results in our paper.
+### Datasets
 
-## Replicating Our Result on E2E
+```bash
+bash download_pretrained_checkpoints.sh
+bash create_datasets.sh
+cd ./eval
+bash download_evalscript.sh
+cd ..
+```
 
-1. Train GPT-2 Medium with LoRA (see our paper for hyperparameters for GPT-2 Medium)
+## Run LoRA, VeRA and RandLoRA
+
+The `train.sh` scripts should be used to reproduce results.
+
+## Further details on training for E2E
+
+1. Train GPT-2 Medium (see our paper for hyperparameters for GPT-2 Medium)
 ```
 python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
@@ -112,71 +98,4 @@ python src/gpt2_decode.py \
 ```
 python eval/e2e/measure_scores.py e2e_ref.txt e2e_pred.txt -p
 ```
-
-## Replicating Our Result on WebNLG
-
-1. Follow steps 1 and 2 from E2E pipeline by replacing references to E2E with webnlg (see our paper for hyperparameters)
-
-2. Decode outputs from beam search (step 2 above)
-```
-python src/gpt2_decode.py \
-    --vocab ./vocab \
-    --sample_file ./trained_models/GPT2_M/webnlg/predict.20000.b10p08.jsonl \
-    --input_file ./data/webnlg_challenge_2017/test_formatted.jsonl \
-    --ref_type webnlg \
-    --ref_num 6 \
-    --output_ref_file eval/GenerationEval/data/references_webnlg \
-    --output_pred_file eval/GenerationEval/data/hypothesis_webnlg \
-    --tokenize --lower
-```
-
-3. Run evaluation on WebNLG test set
-```
-cd ./eval/GenerationEval/
-python eval.py \
-    -R data/references_webnlg/reference \
-    -H data/hypothesis_webnlg \
-    -nr 6 \
-    -m bleu,meteor,ter 
-cd ../..
-```
-
-## Replicating Our Result on DART
-
-1. Follow steps 1 and 2 from E2E pipeline by replacing references to E2E with dart (see our paper for hyperparameters)
-
-2. Decode outputs from beam search (step 2 above)
-```
-python src/gpt2_decode.py \
-        --vocab ./vocab \
-        --sample_file ./trained_models/GPT2_M/dart/predict.20000.b10p08.jsonl \
-        --input_file ./data/dart/test_formatted.jsonl \
-        --ref_type dart \
-        --ref_num 6 \
-        --output_ref_file eval/GenerationEval/data/references_dart \
-        --output_pred_file eval/GenerationEval/data/hypothesis_dart \
-        --tokenize --lower
-```
-
-3. Run evaluation on Dart test set
-```
-cd ./eval/GenerationEval/
-python eval.py \
-    -R data/references_dart/reference \
-    -H data/hypothesis_dart \
-    -nr 6 \
-    -m bleu,meteor,ter 
-cd ../..
-```
-
-## Citation
-```
-@misc{hu2021lora,
-    title={LoRA: Low-Rank Adaptation of Large Language Models},
-    author={Hu, Edward and Shen, Yelong and Wallis, Phil and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Lu and Chen, Weizhu},
-    year={2021},
-    eprint={2106.09685},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
-}
 ```

@@ -2,7 +2,7 @@ rank=20
 name=randlora${rank}
 iter=26290
 
-#python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
+python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
     --valid_data ./data/e2e/valid.jsonl \
     --train_batch_size 8 \
@@ -63,7 +63,7 @@ python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p > 
 rank=16
 name=lora${rank}
 
-#python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
+python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
     --valid_data ./data/e2e/valid.jsonl \
     --train_batch_size 8 \
@@ -121,7 +121,7 @@ python eval/e2e/measure_scores.py e2e_ref_${name}.txt e2e_pred_${name}.txt -p > 
 rank=1024
 name=vera${rank}
 
-#python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
+python -m torch.distributed.launch --nproc_per_node=1 src/gpt2_ft.py \
     --train_data ./data/e2e/train.jsonl \
     --valid_data ./data/e2e/valid.jsonl \
     --train_batch_size 8 \
