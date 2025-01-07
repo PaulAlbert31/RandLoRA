@@ -1,4 +1,4 @@
-# Adapting GPT-2 using LoRA
+# Adapting GPT-2 using RandLoRA
 
 This folder contains the implementation of RandLoRA for GPT-2 for the E2E dataset. This codebase is based of LoRA's NLG [implementation](https://github.com/microsoft/LoRA/tree/main/examples/NLG).
 
