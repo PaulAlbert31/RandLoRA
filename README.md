@@ -14,9 +14,7 @@ standard fine-tuning is observed, is it due to the reduced number of trainable p
 This paper aims to answer this question by introducing RandLoRA, a parameter-efficient method that performs full-rank updates using a learned linear combinations of low-rank, non-trainable random matrices. Our method limits the number of trainable parameters by restricting optimization to diagonal scaling matrices applied to the fixed random matrices. This allows us to effectively overcome low-rank limitations while maintaining low parameter count and memory usage during training.
 Through extensive experimentation across vision, language, and vision-language benchmarks, we systematically evaluate the limitations of LoRA and existing random basis methods. Our findings reveal that full-rank updates are beneficial across vision and language tasks separately, but especially so for vision-language tasks, where RandLoRA significantly reduces—and sometimes eliminates—the performance gap between standard finetuning and LoRA, demonstrating its efficacy.
 
-## Standalone implementation
-
-### Quickstart
+## Quickstart
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/PaulAlbert31/RandLoRA.git
@@ -24,23 +22,24 @@ Through extensive experimentation across vision, language, and vision-language b
    ```
    
 2. **Install dependencies:**
-2.1 Create a new environement
 
-       ```bash
-       conda create -n randlora_peft
-       conda activate randlora_peft
-       ```
+2.1 Create a new environement
+   ```bash
+   conda create -n randlora_peft
+   conda activate randlora_peft
+   ```
 2.2 Install pytorch
-       **Note:** refer to the [official website](https://pytorch.org/get-started/locally/) to ensure you install a version compatible with your locally installed cuda.
+
+   **Note:** refer to the [official website](https://pytorch.org/get-started/locally/) to ensure you install a version compatible with your locally installed cuda.
        
-       ```bash
-       conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-       ```
+   ```bash
+   conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+   ```
 2.3 Additional dependencies
 
-       ```bash
-       pip install transformers accelerate tokenizers==0.20.0
-       ```
+   ```bash
+   pip install transformers accelerate tokenizers==0.20.0
+   ```
    
 ### Usage Examples
 
