@@ -6,6 +6,9 @@ This repository contains the official code for RandLoRA, including an **unoffici
 
 **Read the preprint to learn more about RandLoRA:** [Preprint - **[UPDATE WITH ACTUAL LINK HERE]**]()
 
+
+![RandLoRAOverview](figures/overview.png)
+
 ## Abstract
 
 > Low-Rank Adaptation (LoRA) and its variants have shown impressive results in reducing the number of trainable parameters and memory requirements of large
