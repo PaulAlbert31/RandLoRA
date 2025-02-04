@@ -6,6 +6,7 @@ This repository contains the official code for RandLoRA, including an **unoffici
 
 **Read the preprint to learn more about RandLoRA:** [Preprint](https://arxiv.org/abs/2502.00987)
 
+[[`Paper`](https://arxiv.org/abs/2502.00987)] [[`Website`](https://paulalbert31.github.io/RandLoRA_projectpage/)] [[`BibTeX`](#citation)]
 
 ![RandLoRAOverview](figures/overview.png)
 
@@ -106,7 +107,7 @@ The `NLG/` directory contains the code for reproducing RandLoRA results on natur
 
 ## Citation
 
-If your work benefited from our research, please consider citing the paper.
+If your work benefited from our research, please consider citing our paper.
 
 ```bibtex
 @article{2024_arxiv_RandLoRA,
