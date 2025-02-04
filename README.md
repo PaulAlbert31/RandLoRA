@@ -110,10 +110,10 @@ The `NLG/` directory contains the code for reproducing RandLoRA results on natur
 If your work benefited from our research, please consider citing our paper.
 
 ```bibtex
-@article{2024_arxiv_RandLoRA,
+@article{2024_ICLR_RandLoRA,
   title={RandLoRA: full rank parameter-efficient fine-tuning of large models},
   author={Albert, Paul and Zhang, Frederic Z and Rodriguez-Opazo, Cristian and Saratchandran, Hemanth and Hengel, Anton van den and Abbasnejad, Ehsan},
-  journal={},
+  journal={International Conference on Learning Representations (ICLR)},
   year={2024}
 }
 ```
