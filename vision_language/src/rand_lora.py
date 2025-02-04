@@ -252,11 +252,7 @@ class LoRALayer():
 
         if self.r > 0:
             # Base scaling factor
-            self.scaling = self.lora_alpha / self.r
-            if self.param_type == 'nola':#NoLA
-                self.scaling *= 1
-            elif self.param_type in ['randlora', 'vera']:
-                self.scaling *= 10
+            self.scaling = self.lora_alpha / self.r        
 
         # Mark the weight as unmerged initially
         self.merged = False

@@ -4,7 +4,7 @@
 
 This repository contains the official code for RandLoRA, including an **unofficial** integration with the Hugging Face [PEFT](https://github.com/huggingface/peft) and [Transformers](https://github.com/huggingface/transformers) libraries.
 
-**Read the preprint to learn more about RandLoRA:** [Preprint - **[UPDATE WITH ACTUAL LINK HERE]**]()
+**Read the preprint to learn more about RandLoRA:** [Preprint](https://arxiv.org/abs/2502.00987)
 
 
 ![RandLoRAOverview](figures/overview.png)
