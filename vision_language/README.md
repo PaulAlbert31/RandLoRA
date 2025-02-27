@@ -70,6 +70,7 @@ Refer to train.sh for example usage.
 
 You can customize the training process by modifying the command-line arguments when running finetune.py. For example, you can change the learning rate, batch size, number of epochs, or the specific PEFT method used.
 
+
 ## Results
 
 Training results, including training time, testing time, number of parameters, memory usage, and accuracy, are saved in the results/ directory. Each experiment will have its own subdirectory based on the model name, data ratio, and random seed. The results are stored in a results.txt file within these subdirectories.

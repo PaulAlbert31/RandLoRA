@@ -78,6 +78,11 @@ model = get_peft_model(model, config)
 print(model)
 ```
 
+## Loss landscape visualization
+
+You can now reproduce the 3D loss landscapes in the paper using the [loss_vis.sh](vision_language/loss_vis.sh) script.
+The [loss_barrier.py](vision_language/loss_barrier.py) will save the result as an html file in the current folder and open a tab in your browser.
+
 ## Reproducing the Results
 
 This section guides you on how to reproduce the results presented in the paper. Each subdirectory corresponds to a specific benchmark or task.
