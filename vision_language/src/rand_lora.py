@@ -296,7 +296,7 @@ class LoRALayer():
                 raise NotImplementedError
             #Original weight as non trainable
             eval(f'self.{param_name}').requires_grad = False
-
+        
     def transpose(self, w: torch.Tensor):
         """
         Transposes the weight matrix if fan_in_fan_out is True.
@@ -578,14 +578,11 @@ class MultiheadAttention(nn.MultiheadAttention, LoRALayer):
                 p_new = p.detach() + lora
             else:
                 p_new = p.detach() + lora.T
-                
-            set_param(self, 'in_proj_weight', param=p_new, mode='update')
+
+            self.in_proj_weight.data = p_new
             result = nn.MultiheadAttention.forward(self, query, key, value, **kwargs)
+            self.in_proj_weight.data = p
             
-            if lora.shape == p.shape:
-                self.in_proj_weight.data -= lora
-            else:
-                self.in_proj_weight.data -= lora.T
             return result
         
         return nn.MultiheadAttention.forward(self, query, key, value, **kwargs)

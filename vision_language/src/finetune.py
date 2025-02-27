@@ -64,7 +64,7 @@ def finetune(args):
         batch_size=args.batch_size,
     )
             
-    if args.data_ratio is not None:
+    if not isinstance(args.data_ratio, float):
         to_keep = get_n_shots(dataset.train_dataset, args.data_ratio, model.classifier.out_features, args)
         print(f"Got {len(to_keep):,} trusted samples")
         r = len(to_keep) / args.batch_size
@@ -77,9 +77,10 @@ def finetune(args):
         sampler = InfiniteRandomSubsetSampler(to_keep, len(to_keep)*args.epochs)
         data_loader = torch.utils.data.DataLoader(dataset.train_dataset, batch_size=args.batch_size, sampler=sampler, num_workers=args.workers)
     else:
-        sampler = InfiniteRandomSubsetSampler(torch.arange(len(dataset.train_dataset)), len(dataset.train_dataset)*args.epochs)
+        subset = torch.randperm(len(dataset.train_dataset))[:int(args.data_ratio * len(dataset.train_dataset))]
+        subset.sort()
+        sampler = InfiniteRandomSubsetSampler(subset, len(subset)*args.epochs)
         data_loader = torch.utils.data.DataLoader(dataset.train_dataset, batch_size=args.batch_size, sampler=sampler, num_workers=args.workers)
-
     loss_fn = torch.nn.CrossEntropyLoss()
 
     params_encoder = [p for p in model.encoder.parameters() if p.requires_grad]
@@ -135,7 +136,6 @@ def finetune(args):
                 tbar.set_description(f"Iteration: {i}/{len(data_loader)}, Loss: {loss.item():.4f}, lr: {optimizer.param_groups[0]['lr']:.4f}, memory allocated {torch.cuda.memory_reserved()/1000000000:.2f}G")
             
     train_time = time.time() - train_time
-
     #Test
     inf_time = time.time()    
     metrics = eval_single_dataset(model, test_loader, args)
@@ -149,8 +149,11 @@ def finetune(args):
         with open(os.path.join(args.fname, str(args.data_ratio), str(args.seed), "results.txt"), 'a') as f:
             f.writelines(string)
 
-    if False:#No weight saving at the moment
-        torch.save(model.state_dict(), os.path.join(args.fname, str(args.data_ratio), str(args.seed), 'weights.pth'))
+    if args.save_weights:#Optional model save
+        #torch.save(model.state_dict(), os.path.join(args.fname, str(args.data_ratio), str(args.seed), 'weights.pth'))
+        #Saves the whole model
+        del model.templates #Contains lambda functions that can't be pickled
+        torch.save(model, os.path.join(args.fname, str(args.data_ratio), str(args.seed), f'model_{args.train_dataset}.pth'))
     
     return metrics['top1']
 
@@ -158,13 +161,9 @@ def finetune(args):
 if __name__ == "__main__":
     args = parse_arguments()
     
-    if isinstance(args.data_ratio, float):
-        args.subsample = args.data_ratio
-        args.data_ratio = None
-
     #Same training epochs as in aTLAS (Zhang et al., NeurIPS 2024)
         
-    if args.data_ratio is not None:
+    if not isinstance(args.data_ratio, float):
         epochs = {
             "Cars": args.epochs,
             "DTD": args.epochs,

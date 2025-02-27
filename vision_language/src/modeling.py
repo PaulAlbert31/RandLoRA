@@ -37,7 +37,7 @@ class CLIP(nn.Module):
         self.encoder.model.visual.val_preprocess = self.encoder.val_preprocess
         self.encoder.model.visual.train_preprocess = self.encoder.train_preprocess
         self.image_encoder = self.encoder.model.visual
-        self.text_encoder = lambda x: self.encoder.model.encode_text(x)
+        self.text_encoder = self.encoder.model.encode_text
         self.tokenizer = open_clip.get_tokenizer(args.model)
         dataset = get_dataset(args.train_dataset, None, location=args.data_location)
         self.class_names = dataset.classnames

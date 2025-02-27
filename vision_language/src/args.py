@@ -177,6 +177,21 @@ def parse_arguments():
         type=int,
         help="Degree of sparcity for the random matrices. The --sparse argument must be specified as well. The final degree of sparcity will be 2/sparcity. It is recommended not to exceed sqrt(dim) where dim is the smallest dimension of the weight matrices."
     )
+    parser.add_argument(
+        "--save-weights",
+        default=False,
+        action='store_true',
+        help="Save the whole model"
+    )
+
+
+    ##Args for the loss landscape visualizations
+    parser.add_argument(
+        "--vis-models",
+        default=None,
+        nargs='+',
+        help="3 saved models to interpolate between"
+    )
     
     parsed_args = parser.parse_args()
 
