@@ -2,6 +2,9 @@
 
 **RandLoRA introduces a novel parameter-efficient fine-tuning method that achieves full-rank updates by learning linear combinations of low-rank random matrices, overcoming some limitations of standard Low-Rank Adaptation (LoRA).**
 
+
+**RandLoRA is now officialy supported by the PEFT library see [PR](https://github.com/huggingface/peft/pull/2464).** We suggest you use the official codebase.
+
 This repository contains the official code for RandLoRA, including an **unofficial** integration with the Hugging Face [PEFT](https://github.com/huggingface/peft) and [Transformers](https://github.com/huggingface/transformers) libraries.
 
 **Read the preprint to learn more about RandLoRA:** [Preprint](https://arxiv.org/abs/2502.00987)
