@@ -579,9 +579,11 @@ class MultiheadAttention(nn.MultiheadAttention, LoRALayer):
             else:
                 p_new = p.detach() + lora.T
 
-            self.in_proj_weight.data = p_new
-            result = nn.MultiheadAttention.forward(self, query, key, value, **kwargs)
-            self.in_proj_weight.data = p
+            set_param(self, 'in_proj_weight', param=p_new, mode="update")
+            result = nn.MultiheadAttention.forward(
+                self, query, key, value, **kwargs
+            )
+            set_param(self, 'in_proj_weight', param=p, mode="update")
             
             return result
         
